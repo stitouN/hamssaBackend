@@ -23,13 +23,13 @@ function validateLogin(name:string):number{
   }
   return 0;
 }
-export const createUser= functions.https.onCall((data, context) => {
+export const createUser= functions.https.onCall((data:any, context:any) => {
   let name:string=data.name;
   let language=data.language;
   const users=database.ref('/users/');
   let token:string="";
   name=name.trim().toLowerCase();
-  return users.orderByChild("username").equalTo(name).once('value').then(function(snapshot){
+  return users.orderByChild("username").equalTo(name).once('value').then(function(snapshot:any){
     console.log("run");
     let validate=validateLogin(name);
     if(validate!==0){
@@ -49,7 +49,7 @@ export const createUser= functions.https.onCall((data, context) => {
     email:"",
     imageUrl:"",
     topics:""
-    }).catch((error)=>{
+    }).catch((error:any)=>{
       return 0;
      });
     return {
@@ -64,15 +64,15 @@ export const createUser= functions.https.onCall((data, context) => {
     "error":4
    };
    }
-  }) .catch((error)=>{
+  }) .catch((error:any)=>{
    return 0;
   });
 }); 
 
-export const getMyUserInfo=functions.https.onCall((data, context) => {
+export const getMyUserInfo=functions.https.onCall((data:any, context:any) => {
   let token:string=data.token;
   const users=database.ref('/users/'+token);
-  return users.once('value').then(function(snapshot){
+  return users.once('value').then(function(snapshot:any){
     if(snapshot.val()!==null){
       let result=snapshot.val();
       result.user_id=token;
@@ -83,13 +83,13 @@ export const getMyUserInfo=functions.https.onCall((data, context) => {
   });
   });
 
-export const setEmail=functions.https.onCall((data, context) => {
+export const setEmail=functions.https.onCall((data:any, context:any) => {
   let token=data.token;
   let email=data.email;
-  database.ref('/users/'+token+'/email').set(email).catch((error)=>{
+  database.ref('/users/'+token+'/email').set(email).catch((error:any)=>{
     return 0;
    });
-  return database.ref('/users/'+token).once('value').then(function(snapshot){
+  return database.ref('/users/'+token).once('value').then(function(snapshot:any){
     if(snapshot.val()!=null){
       let result=snapshot.val();
       result.user_id=token;
@@ -99,27 +99,30 @@ export const setEmail=functions.https.onCall((data, context) => {
     return 0;
     });
 });
-export const createTopic=functions.https.onCall((data, context) => {
+export const createTopic=functions.https.onCall((data:any, context:any) => {
   //let name:string=req.body.user_id;
   let token:string=data.token;
 
   const users=database.ref('/users/'+token);
   const topics=database.ref('/topics');
-  return users.once('value').then(function(snapshot){
+  return users.once('value').then(function(snapshot:any){
     topics.push({
   "userId":token,
   "userName":snapshot.val().username,
   "description":data.content,
   "imageUrl":data.image_url,
-  //"audioUrl":data.audioUrl,
+  "audioUrl":data.audioUrl,
+  "audioDuration" : data.audioDuration,
+  "audioRate": data.audioRate,
   "time":new Date().getTime(), 
   "title":data.title,
   "order":0,
   "removed":0,
   "numMessages":0,
+  "numLike": 0,
   "messages":""
    });
-   return topics.once('value').then(function(snap){
+   return topics.once('value').then(function(snap:any){
     if(snap.val()!=null){
       return snap.val();
     }
@@ -129,7 +132,7 @@ export const createTopic=functions.https.onCall((data, context) => {
   
 });
 
-export const getTopics=functions.https.onCall((data, context) => {
+export const getTopics=functions.https.onCall((data:any, context:any) => {
   //let name:string=data.user_id;
   let token:string=data.token;
   //let order:number=data.order;
@@ -137,9 +140,9 @@ export const getTopics=functions.https.onCall((data, context) => {
   const users=database.ref('/users/'+token);
   const topics=database.ref('/topics/');
 
-  return users.once('value').then(function(snapshot){
+  return users.once('value').then(function(snapshot:any){
     if(snapshot.val()!=null){
-      return topics.orderByKey().once('value').then(function(snap){
+      return topics.orderByKey().once('value').then(function(snap:any){
         if(snap.val()!=null){
          return snap.val();
         }
@@ -151,10 +154,10 @@ export const getTopics=functions.https.onCall((data, context) => {
 
 });
 
-export const getTopicByUser=functions.https.onCall((data,context) => {
+export const getTopicByUser=functions.https.onCall((data:any,context:any) => {
   let token:string=data.token;
   const topic=database.ref('/topics/');
-  return topic.orderByChild("userId").equalTo(token).once('value').then(function(snapshot){
+  return topic.orderByChild("userId").equalTo(token).once('value').then(function(snapshot:any){
     if(snapshot!=null){
       return snapshot.val();
     }
@@ -163,18 +166,18 @@ export const getTopicByUser=functions.https.onCall((data,context) => {
 
 });
 
-export const removeTopic=functions.https.onCall((data, context) => {
+export const removeTopic=functions.https.onCall((data:any, context:any) => {
   let token:string=data.token;
   let topicId:string=data.topicId;
   const topic=database.ref('/topics/'+topicId+'/removed');
   const topics=database.ref('/topics/');
   const user=database.ref('/users/'+token);
- return user.once('value').then(function(snapshot){
+ return user.once('value').then(function(snapshot:any){
   if(snapshot.val()!=null){
-    topic.set(1).catch((error)=>{
+    topic.set(1).catch((error:any)=>{
       return 0;
      });
-    return topics.once('value').then(function(snap){
+    return topics.once('value').then(function(snap:any){
       if(snap.val()!=null){
         return snap.val();
       }
@@ -183,13 +186,13 @@ export const removeTopic=functions.https.onCall((data, context) => {
   
 }
 return 0;
-}).catch(function(error){
+}).catch(function(error:any){
   console.log("Remove failed :"+error.message);
 });
 
 });
 
-export const createMessage=functions.https.onCall((data, context) => {
+export const createMessage=functions.https.onCall((data:any, context:any) => {
    //let name:string=req.body.user_id;
    let token:string=data.token;
    let topicId:string=data.topicId;
@@ -197,7 +200,7 @@ export const createMessage=functions.https.onCall((data, context) => {
 
    const messages=database.ref('/topics/'+topicId+"/messages");
    const user=database.ref('/users/'+token);
-   return user.once('value').then(function(snapshot){
+   return user.once('value').then(function(snapshot:any){
      if(snapshot.val()!=null){
     messages.push({"name":snapshot.val().username,
    "normalizedName":snapshot.val().username,
@@ -210,10 +213,10 @@ export const createMessage=functions.https.onCall((data, context) => {
    "order":0,
    "removed":0
     });
-    database.ref('/topics/'+topicId+"/numMessages").set(numMessages+1).catch(function(error){
+    database.ref('/topics/'+topicId+"/numMessages").set(numMessages+1).catch(function(error:any){
     console.log("error "+error);
     });
-   return user.once('value').then(function(snap){
+   return user.once('value').then(function(snap:any){
      if(snap.val()!=null){
        return snap.val();
      }
@@ -225,16 +228,16 @@ export const createMessage=functions.https.onCall((data, context) => {
 
 });
 
-export const getMessages=functions.https.onCall((data, context) => {
+export const getMessages=functions.https.onCall((data:any, context:any) => {
 
 let topicId:string=data.topicId;
 let token:string=data.token;
 
 const user=database.ref('/users/'+token);
 const messages=database.ref('/topics/'+topicId+'/messages')
-return user.once('value').then(function(snapshot){
+return user.once('value').then(function(snapshot:any){
    if(snapshot.val()!=null){
-     return messages.once('value').then(function(snap){
+     return messages.once('value').then(function(snap:any){
        if(snap.val()!=null){
          return snap.val();
        }
@@ -245,7 +248,7 @@ return user.once('value').then(function(snapshot){
 });
 });
 
-export const voteMessage=functions.https.onCall((data, context) => {
+export const voteMessage=functions.https.onCall((data:any, context:any) => {
   
   let topicId:string=data.topicId;
   let messageId:string=data.messageId;
@@ -254,30 +257,30 @@ export const voteMessage=functions.https.onCall((data, context) => {
   
   const user=database.ref('/users/'+token);
   const message=database.ref('/topics/'+topicId+'/messages/'+messageId)
-  return user.once('value').then(function(snapshot){
+  return user.once('value').then(function(snapshot:any){
      if(snapshot.val()!=null){
-       return message.once('value').then(function(snap){
+       return message.once('value').then(function(snap:any){
          if(snap.val()!=null){
            if(value>0){
             let votesUp:number=snap.val().votesUp;
-            database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp+1).catch((error)=>{
+            database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp+1).catch((error:any)=>{
               return 0;
              });
              if(value===-2){
               let votesDown:number=snap.val().votesDown;
-              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown-1).catch((error)=>{
+              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown-1).catch((error:any)=>{
                 return 0;
                });
               }
             return {"result":1};
            }else{
             let votesDown:number=snap.val().votesDown;
-            database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown+1).catch((error)=>{
+            database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown+1).catch((error:any)=>{
               return 0;
              });
              if(value===-2){
               let votesUp:number=snap.val().votesUp;
-              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp-1).catch((error)=>{
+              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp-1).catch((error:any)=>{
                 return 0;
                });
              }
@@ -291,7 +294,7 @@ export const voteMessage=functions.https.onCall((data, context) => {
   });
   });
 
-  export const unvoteMessage=functions.https.onCall((data, context) => {
+  export const unvoteMessage=functions.https.onCall((data:any, context:any) => {
   
     let topicId:string=data.topicId;
     let messageId:string=data.messageId;
@@ -300,14 +303,14 @@ export const voteMessage=functions.https.onCall((data, context) => {
     
     const user=database.ref('/users/'+token);
     const message=database.ref('/topics/'+topicId+'/messages/'+messageId)
-    return user.once('value').then(function(snapshot){
+    return user.once('value').then(function(snapshot:any){
        if(snapshot.val()!=null){
-         return message.once('value').then(function(snap){
+         return message.once('value').then(function(snap:any){
            if(snap.val()!=null){
              if(value>0){
               let votesUp:number=snap.val().votesUp;
               if(votesUp!=0){
-              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp-1).catch((error)=>{
+              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesUp').set(votesUp-1).catch((error:any)=>{
                 return 0;
                });
                return {"result":1};
@@ -316,7 +319,7 @@ export const voteMessage=functions.https.onCall((data, context) => {
              }else{
               let votesDown:number=snap.val().votesDown;
               if(votesDown!=0){
-              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown-1).catch((error)=>{
+              database.ref('/topics/'+topicId+'/messages/'+messageId+'/votesDown').set(votesDown-1).catch((error:any)=>{
                 return 0;
                });
                return {"result":1};
